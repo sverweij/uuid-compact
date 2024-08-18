@@ -1,0 +1,80 @@
+{
+  "name": "uuid-compact",
+  "description": "Represent UUIDs with compact base64url encoding",
+  "version": "1.0.0",
+  "keywords": [
+    "git",
+    "diff"
+  ],
+  "homepage": "https://github.com/sverweij/uuid-compact",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sverweij/uuid-compact.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sverweij/uuid-compact/issues"
+  },
+  "author": {
+    "name": "Sander Verweij",
+    "url": "https://sverweij.github.io"
+  },
+  "license": "MIT",
+  "main": "dist/main.js",
+  "module": "dist/main.js",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": [
+      {
+        "types": "./types/uuid-compact.d.ts",
+        "import": "./dist/main.js"
+      },
+      "./dist/main.js"
+    ]
+  },
+  "types": "types/uuid-compact.d.ts",
+  "scripts": {
+    "build": "npm-run-all --sequential build:clean build:dist build:format",
+    "build:clean": "rm -rf dist/*",
+    "build:dist": "tsc",
+    "build:format": "prettier --log-level warn --write --use-tabs dist/",
+    "check": "npm-run-all --parallel --aggregate-output lint depcruise test:cover",
+    "clean": "rm -rf dist",
+    "test": "tsx --test-reporter ./tools/dot-with-summary.reporter.js --test src/*.spec.ts src/**/*.spec.ts",
+    "test:cover": "c8 npm test",
+    "depcruise": "depcruise dist src types",
+    "depcruise:graph": "depcruise src types --include-only '^(dist|src|types)' --output-type dot | dot -T svg | tee docs/dependency-graph.svg | depcruise-wrap-stream-in-html > docs/dependency-graph.html",
+    "depcruise:graph:dev": "depcruise dist src types --include-only '^(dist|src|types)' --prefix vscode://file/$(pwd)/ --output-type dot | dot -T svg | depcruise-wrap-stream-in-html | browser",
+    "depcruise:graph:diff:dev": "depcruise dist src types --include-only '^(dist|src|types)' --highlight \"$(npx watskeburt main -T regex)\" --prefix vscode://file/$(pwd)/ --output-type dot | dot -T svg | depcruise-wrap-stream-in-html | browser",
+    "depcruise:graph:diff:mermaid": "depcruise dist src types --include-only '^(dist|src|types)' --output-type mermaid --output-to - --highlight \"$(npx watskeburt $SHA -T regex)\"",
+    "depcruise:html": "depcruise src types --progress --output-type err-html --output-to dependency-violation-report.html",
+    "depcruise:text": "depcruise src types --progress --output-type text",
+    "depcruise:focus": "depcruise src types --progress --output-type text --focus",
+    "depcruise:reaches": "depcruise src types --progress --output-type text --reaches",
+    "format": "prettier --log-level warn --write \"{src,tools}/**/*.{js,ts}\" \"types/**/*.ts\" \"*.{json,yml,md,js}\" \"!package-lock.json\"",
+    "format:check": "prettier --log-level warn --check \"{src,tools}/**/*.ts\" \"types/**/*.ts\" \"*.{json,yml,md,js}\" \"!package-lock.json\"",
+    "lint": "npm-run-all --parallel --aggregate-output format:check lint:types",
+    "lint:types": "tsc --noEmit",
+    "prepack": "clean-pkg-json --dry | jq '.scripts = {test: \"echo for test, build and static analysis scripts: see the github repository\"}' > smol-package.json && mv smol-package.json package.json && prettier --log-level warn --write --use-tabs package.json types",
+    "postpack": "git restore package.json types",
+    "scm:stage": "git add .",
+    "update-dependencies": "npm-run-all --sequential upem:update upem:install lint:fix check",
+    "upem-outdated": "npm outdated --json --long | upem --dry-run",
+    "upem:install": "npm install",
+    "upem:update": "npm outdated --json --long | upem | pbcopy && pbpaste",
+    "version": "npm-run-all --sequential clean build lint depcruise:graph scm:stage"
+  },
+  "devDependencies": {
+    "@types/node": "^22.4.0",
+    "@types/uuid": "10.0.0",
+    "c8": "^10.1.2",
+    "clean-pkg-json": "^1.2.0",
+    "dependency-cruiser": "^16.4.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.3.3",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "upem": "^9.0.4",
+    "watskeburt": "4.1.0"
+  }
+}

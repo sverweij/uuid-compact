@@ -1,0 +1,7 @@
+.vscode
+/node_modules/
+/coverage/
+*.log
+*.swp
+tmp-*
+*.tgz

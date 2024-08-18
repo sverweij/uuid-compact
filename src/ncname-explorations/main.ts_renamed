@@ -1,0 +1,128 @@
+const base64urlChars =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+function encodeBase64Url(binary: Uint8Array): string {
+  let output = "";
+  let temp = 0;
+  let bits = 0;
+
+  for (let i = 0; i < binary.length; i++) {
+    temp = (temp << 8) | binary[i];
+    bits += 8;
+
+    while (bits >= 6) {
+      bits -= 6;
+      output += base64urlChars[(temp >> bits) & 0x3f];
+    }
+  }
+
+  if (bits > 0) {
+    output += base64urlChars[(temp << (6 - bits)) & 0x3f];
+  }
+
+  return output;
+}
+
+function decodeBase64Url(input: string): Uint8Array {
+  const binary: number[] = [];
+  let temp = 0;
+  let bits = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    const index = base64urlChars.indexOf(char);
+    if (index === -1) {
+      throw new Error("Invalid Base64 character");
+    }
+
+    temp = (temp << 6) | index;
+    bits += 6;
+
+    if (bits >= 8) {
+      bits -= 8;
+      binary.push((temp >> bits) & 0xff);
+    }
+  }
+
+  return new Uint8Array(binary);
+}
+
+function uuidToBinary(uuid: string): Uint8Array {
+  const hex = uuid.replace(/-/g, "");
+  const binary = new Uint8Array(16);
+
+  for (let i = 0; i < 16; i++) {
+    binary[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+  }
+
+  return binary;
+}
+
+function binaryToUuid(binary: Uint8Array): string {
+  const hex = Array.from(binary)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
+
+export function encode(uuid: string): string {
+  const ints = uuidToBinary(uuid);
+
+  const version = (ints[1] & 0x0000f000) >> 12;
+  const variant = (ints[2] & 0xf0000000) >> 24;
+
+  // Combine bits to form the 15-byte array for encoding
+  const shiftedInts = new Uint8Array(15);
+  shiftedInts[1] =
+    (ints[1] & 0xffff0000) |
+    ((ints[1] & 0x00000fff) << 4) |
+    ((ints[2] & 0x0fffffff) >> 24);
+  shiftedInts[2] = ((ints[2] & 0x00ffffff) << 8) | (ints[3] >> 24);
+  shiftedInts[3] = (ints[3] << 8) | variant;
+
+  // shiftedBinary.set(binary.slice(0, 6), 0);
+  // shiftedBinary[6] = ((binary[6] & 0x0f) << 4) | ((binary[7] & 0xf0) >> 4);
+  // shiftedBinary[7] = ((binary[7] & 0x0f) << 2) | ((binary[8] & 0xc0) >> 6);
+  // shiftedBinary.set(binary.slice(9), 8);
+
+  // Base64 URL-safe encoding
+  const base64Encoded = encodeBase64Url(shiftedInts);
+
+  // Construct the NCName-64 string
+  return base64urlChars[version] + base64Encoded + base64urlChars[variant];
+}
+
+export function decode(ncname64: string): string {
+  if (ncname64.length !== 22) {
+    throw new Error("Invalid NCName-64 string length");
+  }
+
+  const versionChar = ncname64.charAt(0);
+  const variantChar = ncname64.charAt(21);
+
+  const version = base64urlChars.indexOf(versionChar);
+  const variant = base64urlChars.indexOf(variantChar) << 6;
+
+  // Decode the Base64 URL-safe string
+  const base64Encoded = ncname64.slice(1, 21);
+  const binary = decodeBase64Url(base64Encoded);
+
+  // Reverse the shifting algorithm
+  const restoredBinary = new Uint8Array(16);
+  restoredBinary.set(binary.slice(0, 6), 0);
+  restoredBinary[6] = (version << 4) | ((binary[6] & 0xf0) >> 4);
+  restoredBinary[7] = (binary[6] << 4) | ((binary[7] & 0xfc) >> 2);
+  restoredBinary[8] = ((binary[7] & 0x03) << 6) | (variant >> 6);
+  restoredBinary.set(binary.slice(8), 9);
+
+  return binaryToUuid(restoredBinary);
+}
+
+// // Example usage:
+// const uuid = "01867b2c-a0dd-459c-98d7-89e545538d6c";
+// const ncname64 = encode(uuid);
+// console.log("Encoded NCName-64:", ncname64); // Should output: EAYZ7LKDdWcjXieVFU41sJ
+
+// const decodedUuid = decode(ncname64);
+// console.log("Decoded UUID:", decodedUuid); // Should output: 01867b2c-a0dd-459c-98d7-89e545538d6c

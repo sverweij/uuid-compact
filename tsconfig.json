@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ESNext" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019' or 'ESNEXT'. */,
+    "lib": ["ESNext"],
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "./dist",
+    "removeComments": true,
+    "noEmit": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolvePackageJsonExports": true,
+    "resolvePackageJsonImports": true,
+    "pretty": true,
+    "module": "NodeNext",
+    "rootDir": "./src/",
+    "moduleResolution": "NodeNext",
+    "baseUrl": "./",
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "types/**/*",
+    "src/**/*.ts",
+    "src/ncname-explorations/main.ts_renamed",
+    "src/ncname-explorations/main.spec.ts_renamed"
+  ],
+  "exclude": ["src/**/*.spec.ts"]
+}

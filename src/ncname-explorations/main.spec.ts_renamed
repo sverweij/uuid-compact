@@ -1,0 +1,80 @@
+import { deepEqual } from "node:assert/strict";
+import { describe, it } from "node:test";
+import { encode, decode } from "./main.ts_renamed";
+
+const RFC_SAMPLES = [
+  {
+    reference: "0, Nil",
+    canonical: "00000000-0000-0000-0000-000000000000",
+    ncname32: "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+    ncname64: "AAAAAAAAAAAAAAAAAAAAAA",
+    ncname58: "A111111111111111______A",
+  },
+  //   {
+  //     reference: "1, Timestamp",
+  //     canonical: "ca6be4c8-cbaf-11ea-b2ab-00045a86c8a1",
+  //     ncname32: "bzjv6jsglv4pkfkyaarninsfbl",
+  //     ncname64: "BymvkyMuvHqKrAARahsihL",
+  //     ncname58: "B6fTkmTD22KpWbDq1LuiszL",
+  //   },
+  //   {
+  //     reference: "2, DCE 'Security'",
+  //     canonical: "000003e8-cbb9-21ea-b201-00045a86c8a1",
+  //     ncname32: "caaaah2glxepkeaiaarninsfbl",
+  //     ncname64: "CAAAD6Mu5HqIBAARahsihL",
+  //     ncname58: "C11KtP6Y9P3rRkvh2N1e__L",
+  //   },
+  //   {
+  //     reference: "3, MD5",
+  //     canonical: "3d813cbb-47fb-32ba-91df-831e1593ac29",
+  //     ncname32: "dhwatzo2h7mv2dx4ddykzhlbjj",
+  //     ncname64: "DPYE8u0f7K6Hfgx4Vk6wpJ",
+  //     ncname58: "D2ioV6oTr9yq6dMojd469nJ",
+  //   },
+  {
+    reference: "4, Random",
+    canonical: "01867b2c-a0dd-459c-98d7-89e545538d6c",
+    ncname32: "eagdhwlfa3vm4rv4j4vcvhdlmj",
+    ncname64: "EAYZ7LKDdWcjXieVFU41sJ",
+    ncname58: "E3UZ99RxxUJC1v4dWsYtb_J",
+  },
+  //   {
+  //     reference: "5, SHA-1",
+  //     canonical: "21f7f8de-8051-5b89-8680-0195ef798b6a",
+  //     ncname32: "feh37rxuakg4jnaabsxxxtc3ki",
+  //     ncname64: "FIff43oBRuJaAAZXveYtqI",
+  //     ncname58: "Fx7wEJfz9eb1TYzsrT7Zs_I",
+  //   },
+];
+
+describe("main - encode", () => {
+  for (const sample of RFC_SAMPLES) {
+    it(`encodes ${sample.reference}: ${sample.canonical} to ${sample.ncname64}`, () => {
+      deepEqual(encode(sample.canonical), sample.ncname64);
+    });
+  }
+});
+
+// describe("main - decodes", () => {
+//   for (const sample of RFC_SAMPLES) {
+//     it(`decodes ${sample.reference}: ${sample.ncname64} to ${sample.canonical}`, () => {
+//       deepEqual(decode(sample.ncname64), sample.canonical);
+//     });
+//   }
+// });
+
+// describe("main - encode and decode", () => {
+//   for (const sample of RFC_SAMPLES) {
+//     it(`encodes and decodes ${sample.reference}: ${sample.canonical}`, () => {
+//       deepEqual(decode(encode(sample.canonical)), sample.canonical);
+//     });
+//   }
+// });
+
+// describe("main - decode and encode", () => {
+//   for (const sample of RFC_SAMPLES) {
+//     it(`decodes and encodes ${sample.reference}: ${sample.ncname64}`, () => {
+//       deepEqual(encode(decode(sample.ncname64)), sample.ncname64);
+//     });
+//   }
+// });
