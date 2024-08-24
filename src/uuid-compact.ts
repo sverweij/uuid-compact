@@ -28,10 +28,10 @@ export function isValidCompactUUID(pCompactUUID: string): boolean {
   return BASE64_REGEX.test(pCompactUUID);
 }
 
-export function encode(pUUID: string): string {
-  return Buffer.from(uuidToOctets(pUUID)).toString("base64url");
+export function toCompactUUID(pCanonicalUUID: string): string {
+  return Buffer.from(uuidToOctets(pCanonicalUUID)).toString("base64url");
 }
 
-export function decode(pCompactUUID: string): string {
+export function toCanonicalUUID(pCompactUUID: string): string {
   return octetsToUuid(Buffer.from(pCompactUUID, "base64url"));
 }

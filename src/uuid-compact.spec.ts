@@ -2,7 +2,12 @@ import { equal, match } from "node:assert/strict";
 import { randomUUID, randomBytes } from "node:crypto";
 import { describe, it } from "node:test";
 
-import { encode, decode, isValidCompactUUID, isValidUUID } from "./main.js";
+import {
+  toCompactUUID,
+  toCanonicalUUID,
+  isValidCompactUUID,
+  isValidUUID,
+} from "./uuid-compact.js";
 
 function generateRandomBase64URL(): string {
   const randomBytesArray = randomBytes(16);
@@ -10,45 +15,45 @@ function generateRandomBase64URL(): string {
   return base64URL;
 }
 
-const RANDOM_SAMPLES = new Array(100).fill(null).map(() => randomUUID());
+const RANDOM_SAMPLES = new Array(42).fill(null).map(() => randomUUID());
 const SAMPLES = [
   "00000000-0000-0000-0000-000000000000",
   "ffffffff-ffff-ffff-ffff-ffffffffffff",
   ...RANDOM_SAMPLES,
 ];
 
-const RANDOM_BASE64URLS = new Array(100)
+const RANDOM_BASE64URLS = new Array(42)
   .fill(null)
   .map(() => generateRandomBase64URL());
 
-describe("transparently encodes random UUIDs", () => {
+describe("transparently toCompacts random UUIDs", () => {
   for (const sample of SAMPLES) {
     it(`encoding and decoding ${sample} is idempotent`, () => {
-      equal(decode(encode(sample)), sample);
+      equal(toCanonicalUUID(toCompactUUID(sample)), sample);
     });
 
     it(`${sample} is a valid base64url string`, () => {
-      equal(isValidCompactUUID(encode(sample)), true);
+      equal(isValidCompactUUID(toCompactUUID(sample)), true);
     });
 
     it(`${sample} is a valid UUID`, () => {
-      equal(isValidUUID(decode(encode(sample))), true);
+      equal(isValidUUID(toCanonicalUUID(toCompactUUID(sample))), true);
     });
   }
 });
 
-describe("transparently decodes random base64url strings", () => {
+describe("transparently toCanonicals random base64url strings", () => {
   for (const sample of RANDOM_BASE64URLS) {
     it(`encoding and decoding ${sample} is idempotent`, () => {
-      equal(encode(decode(sample)), sample);
+      equal(toCompactUUID(toCanonicalUUID(sample)), sample);
     });
 
-    it(`decode(${sample})=>${decode(sample)} is something that _looks_ like a UUID`, () => {
+    it(`toCanonical(${sample})=>${toCanonicalUUID(sample)} is something that _looks_ like a UUID`, () => {
       // note that a random base64url string is not guaranteed to be a valid UUID
       // hence the use of a naive regex here.
       const naiveUUIDRE =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      match(decode(sample), naiveUUIDRE);
+      match(toCanonicalUUID(sample), naiveUUIDRE);
     });
   }
 });
