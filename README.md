@@ -86,4 +86,4 @@ representation, retain the number of bits, as well as the entropy. Some approach
 
 The simplest solution that seems to work looks to be base64url encoding, which
 will shorten the representation to 22 characters and keeps it safe for use in URL's.
-This is what the `encode` and `decode` functions in this repository do right now.
+This is what the `toCompactUUID` does right now.
